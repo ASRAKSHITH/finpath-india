@@ -1,0 +1,31 @@
+# Virtual environment
+venv/
+.venv/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment variables / secrets
+.env
+
+# Test / tool caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# OS / editor files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+finpath_logs/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# VS Code settings (optional)
+.vscode/
