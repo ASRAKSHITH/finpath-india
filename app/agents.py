@@ -4,7 +4,7 @@ from app.schemas import UserProfile
 
 
 class FinPathAgent:
-    def __init__(self, name: str, system_instruction: str, model_name: str = "gemini-2.5-flash"):
+    def __init__(self, name: str, system_instruction: str, model_name: str = "gemini-2.5-flash-lite"):
         self.name = name
         self.model = genai.GenerativeModel(
             model_name=model_name,
@@ -20,12 +20,13 @@ class FinPathAgent:
 def build_profiler():
     return FinPathAgent(
         name="IndianProfiler",
-        model_name="gemini-2.5-flash",
+        model_name="gemini-2.5-flash-lite",
         system_instruction="""
 You extract financial profile data from Indian users.
 Return ONLY valid JSON with:
 savings_amount, debt_amount, debt_interest_rate, monthly_surplus, time_horizon, investment_preference
-Use 0 where value is missing.
+Use 0 where numeric value is missing.
+For investment_preference, use "market" if missing.
 time_horizon must be an integer.
 """
     )
@@ -43,7 +44,7 @@ def parse_profile(text: str) -> UserProfile:
 def build_advisor():
     return FinPathAgent(
         name="IndianFinancialAdvisor",
-        model_name="gemini-2.5-flash",
+        model_name="gemini-2.5-flash-lite",
         system_instruction="""
 You are a financial decision assistant for Indian users.
 Give clear, actionable advice in the same language as the user's query.
