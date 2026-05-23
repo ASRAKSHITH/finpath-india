@@ -29,3 +29,13 @@ finpath_logs/
 
 # VS Code settings (optional)
 .vscode/
+
+# Frontend / Vite
+node_modules/
+finpath-ui/node_modules/
+dist/
+finpath-ui/dist/
+*.local
+finpath-ui/.env
+finpath-ui/.env.local
+finpath-ui/.vite/
