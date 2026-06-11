@@ -35,8 +35,8 @@ function App() {
 
       const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data?.detail || data?.message || "Something went wrong.");
+      if (!response.ok || data?.error) {
+        throw new Error(data?.error || data?.detail || data?.message || "Something went wrong.");
       }
 
       setResult(data);

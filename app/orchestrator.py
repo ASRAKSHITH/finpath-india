@@ -1,4 +1,5 @@
 import time
+from pydantic import ValidationError
 from app.market import IndianMarketMCP
 from app.calculators import (
     calculate_sip_growth,
@@ -23,7 +24,18 @@ async def run_finpath_india(user_query: str) -> dict:
     try:
         profile_raw = profiler.send_message(user_query)
         logger.log_agent_event(trace_id, "IndianProfiler", profile_raw)
-        profile = parse_profile(profile_raw)
+
+        try:
+            profile = parse_profile(profile_raw)
+        except (ValueError, ValidationError) as exc:
+            raise ValueError(f"Profile extraction failed: {exc}") from exc
+
+        if profile.time_horizon < 1:
+            raise ValueError("time_horizon must be at least 1 year.")
+        if profile.monthly_surplus < 0:
+            raise ValueError("monthly_surplus cannot be negative.")
+        if profile.debt_amount < 0:
+            raise ValueError("debt_amount cannot be negative.")
 
         nifty = market.get_nifty_return(1)
         ppf = market.get_ppf_rate()
@@ -93,6 +105,8 @@ Please produce:
 3. Counterfactual
 4. Tax Impact
 5. Data Transparency
+
+If the user's query is in English, answer in English. If the user's query is in Hindi, answer in Hindi.
 """
 
         recommendation = advisor.send_message(advisor_prompt)
@@ -113,6 +127,7 @@ Please produce:
 
     except Exception as e:
         duration_ms = (time.time() - start) * 1000
+        logger.log_agent_event(trace_id, "Error", str(e))
         logger.complete_trace(trace_id, duration_ms, success=False)
         return {
             "error": str(e),

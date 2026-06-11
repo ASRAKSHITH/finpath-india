@@ -10,10 +10,10 @@ class FinPathAgent:
             model_name=model_name,
             system_instruction=system_instruction
         )
-        self.chat = self.model.start_chat()
 
     def send_message(self, message: str) -> str:
-        response = self.chat.send_message(message)
+        chat = self.model.start_chat()
+        response = chat.send_message(message)
         return response.text
 
 
@@ -28,6 +28,7 @@ savings_amount, debt_amount, debt_interest_rate, monthly_surplus, time_horizon, 
 Use 0 where numeric value is missing.
 For investment_preference, use "market" if missing.
 time_horizon must be an integer.
+If the user's query is in English, respond in English. If the user's query is in Hindi, respond in Hindi.
 """
     )
 
@@ -36,8 +37,14 @@ def parse_profile(text: str) -> UserProfile:
     clean = text.strip()
     if "{" in clean and "}" in clean:
         clean = clean[clean.index("{"):clean.rindex("}") + 1]
+    else:
+        raise ValueError("Profiler output did not contain a JSON object.")
 
-    data = json.loads(clean)
+    try:
+        data = json.loads(clean)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"Unable to parse profile JSON from agent output: {exc.msg}") from exc
+
     return UserProfile(**data)
 
 
@@ -48,6 +55,7 @@ def build_advisor():
         system_instruction="""
 You are a financial decision assistant for Indian users.
 Give clear, actionable advice in the same language as the user's query.
+If the user's query is in English, respond in English. If the user's query is in Hindi, respond in Hindi.
 Explain recommendation, numbers, counterfactual, tax impact, and data transparency.
 """
     )
