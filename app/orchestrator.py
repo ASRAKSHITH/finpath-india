@@ -10,8 +10,16 @@ from app.calculators import (
 from app.observability import ProductionLogger
 from app.agents import build_profiler, build_advisor, build_archivist, parse_profile, run_agent
 
+"""
+ARCHITECTURE: The Orchestrator (Agentic Workflow)
+Purpose: Coordinates the 'Counterfactual Decision Support Framework'. 
+Design: This is the central nervous system. It routes data between the Profiler (extraction), the Market MCP (live data), the Python calculators (deterministic math), and the Advisor (synthesis). 
+By isolating these concerns, it prevents LLM math hallucinations and allows the user to explore 'what if' alternatives safely.
+"""
+
 logger = ProductionLogger()
 market = IndianMarketMCP()
+
 profiler = build_profiler()
 advisor = build_advisor()
 archivist = build_archivist()

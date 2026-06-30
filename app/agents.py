@@ -39,6 +39,11 @@ def run_agent(agent: LlmAgent, prompt: str) -> str:
                     raise e
 
 def build_profiler():
+    """
+    ARCHITECTURE: The Profiler Agent
+    Purpose: Schema validation and data extraction.
+    Design: By forcing the LLM to output pure JSON, we decouple language understanding from programmatic execution, mitigating prompt injection risks.
+    """
     return LlmAgent(
         name="IndianProfiler",
         model="gemini-2.5-flash",
@@ -49,13 +54,13 @@ savings_amount, debt_amount, debt_interest_rate, monthly_surplus, time_horizon, 
 Use 0 where numeric value is missing.
 For investment_preference, use "market" if missing.
 time_horizon must be an integer.
-time_horizon must be an integer.
 CRITICAL RULE: You MUST respond in the EXACT same language as the user's prompt. If the prompt is purely English, your response MUST be 100% English. If you detect English, do not use Hindi.
 """
     )
 
 
 def parse_profile(text: str) -> UserProfile:
+    # Security/Robustness: Gracefully handle markdown blocks or extraneous text
     clean = text.strip()
     if "{" in clean and "}" in clean:
         clean = clean[clean.index("{"):clean.rindex("}") + 1]
@@ -71,6 +76,11 @@ def parse_profile(text: str) -> UserProfile:
 
 
 def build_advisor():
+    """
+    ARCHITECTURE: The Advisor Agent
+    Purpose: Synthesis and Counterfactual generation.
+    Design: This agent does NO math. It receives deterministic math results from Python and explains the alternatives and counterfactuals. This turns it from a simple calculator into a Decision Support Framework.
+    """
     return LlmAgent(
         name="IndianFinancialAdvisor",
         model="gemini-2.5-flash",
@@ -82,6 +92,11 @@ Explain recommendation, numbers, counterfactual, tax impact, and data transparen
     )
 
 def build_archivist():
+    """
+    ARCHITECTURE: The Memory Archivist Agent
+    Purpose: Context Engineering & State Management.
+    Design: Instead of passing raw, token-heavy conversation logs back into the prompt (which causes context rot), this agent actively manages state by compressing history into a 'Rolling Summary'.
+    """
     return LlmAgent(
         name="IndianArchivist",
         model="gemini-2.5-flash",
