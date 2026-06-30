@@ -102,9 +102,13 @@ function App() {
           <p className="mb-2 inline-block rounded-full bg-emerald-100 px-3 py-1 text-sm font-medium text-emerald-700">
             FinPath India
           </p>
-          <h1 className="text-4xl font-bold tracking-tight">
-            AI-assisted financial decision support
+          <h1 className="text-4xl font-bold tracking-tight mb-4">
+            Counterfactual Decision Support Engine
           </h1>
+          <p className="text-slate-600 max-w-2xl mx-auto text-lg leading-relaxed">
+            Explore alternative realities and see the true long-term impact of your financial choices. 
+            Describe your situation below (or click an example) to generate a transparent, data-driven "Vibe Diff" execution plan.
+          </p>
         </header>
 
         {messages.length === 0 && (
