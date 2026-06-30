@@ -24,41 +24,58 @@ class ProductionLogger:
 
     def start_trace(self, user_query: str) -> str:
         trace_id = f"trace{len(self.traces)+1:04d}{datetime.now().strftime('%H%M%S')}"
-        self.traces[trace_id] = {
+        event = {
             "trace_id": trace_id,
             "query": user_query,
             "start_time": datetime.now().isoformat(),
-            "events": [],
             "status": "in_progress",
         }
+        self.traces[trace_id] = event
+        self.traces[trace_id]["events"] = []
         self.metrics["total_requests"] += 1
+        
+        # Structured log for observability platform
+        self.logger.info(json.dumps({"event_type": "START_TRACE", **event}))
         return trace_id
 
     def log_agent_event(self, trace_id: str, agent_name: str, output: str):
         if trace_id in self.traces:
-            self.traces[trace_id]["events"].append({
+            event = {
                 "type": "agent",
                 "agent": agent_name,
-                "output": output[:300],
+                "output": output[:500], # truncating for log size
                 "timestamp": datetime.now().isoformat(),
-            })
+                "trace_id": trace_id
+            }
+            self.traces[trace_id]["events"].append(event)
             self.metrics["agent_calls"][agent_name] = self.metrics["agent_calls"].get(agent_name, 0) + 1
+            self.logger.info(json.dumps({"event_type": "AGENT_CALL", **event}))
 
     def log_tool_call(self, trace_id: str, tool_name: str, result: dict):
         if trace_id in self.traces:
-            self.traces[trace_id]["events"].append({
+            event = {
                 "type": "tool",
                 "tool": tool_name,
                 "result": result,
                 "timestamp": datetime.now().isoformat(),
-            })
+                "trace_id": trace_id
+            }
+            self.traces[trace_id]["events"].append(event)
             self.metrics["tool_calls"][tool_name] = self.metrics["tool_calls"].get(tool_name, 0) + 1
+            self.logger.info(json.dumps({"event_type": "TOOL_CALL", **event}))
 
     def complete_trace(self, trace_id: str, duration_ms: float, success: bool = True):
         if trace_id in self.traces:
             self.traces[trace_id]["status"] = "success" if success else "failed"
             self.traces[trace_id]["end_time"] = datetime.now().isoformat()
             self.traces[trace_id]["total_duration_ms"] = round(duration_ms, 2)
+            
+            self.logger.info(json.dumps({
+                "event_type": "COMPLETE_TRACE",
+                "trace_id": trace_id,
+                "status": self.traces[trace_id]["status"],
+                "duration_ms": self.traces[trace_id]["total_duration_ms"]
+            }))
 
         if success:
             self.metrics["successful_requests"] += 1

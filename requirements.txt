@@ -3,6 +3,10 @@ uvicorn[standard]
 python-dotenv
 pydantic
 google-generativeai
+google-adk
+fastmcp
+slowapi
 yfinance
 requests
 pytest
+pytest-asyncio

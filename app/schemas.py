@@ -17,8 +17,17 @@ class UserProfile(BaseModel):
         return str(v)
 
 
+class Message(BaseModel):
+    role: str
+    content: str
+
 class FinPathRequest(BaseModel):
-    query: str
+    query: str = Field(..., min_length=5, max_length=500, description="User financial query. Limited to 500 characters to prevent prompt injection.")
+    history: list[Message] = Field(default=[], description="Previous conversation history")
+
+class FinPathFeedback(BaseModel):
+    trace_id: str
+    feedback: str
 
 
 class FinPathResponse(BaseModel):
