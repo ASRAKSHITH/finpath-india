@@ -1,80 +1,92 @@
-# FinPath India
+# FinPath India: A Counterfactual Decision Support Framework 🇮🇳
 
-An AI-driven financial advisory concierge agent tailored for the Indian market. Built using the Google Agent Development Kit (ADK), FastAPI, and React. 
+FinPath India is not just a financial calculator. It is a stateful, highly observable **Counterfactual Decision Support Engine**. 
+The core purpose of this project is to help users explore "what if" scenarios (counterfactuals) and see the true long-term impact of their choices across different paths (e.g., paying off high-interest debt vs. investing in equity). As this framework evolves, this same agentic pattern can be applied to healthcare or education decision-making.
 
+Unlike standard chatbots that suffer from "LLM Math" hallucinations, FinPath implements a strict **Agentic Workflow** using the Google Agent Development Kit (ADK). It separates probabilistic language generation from deterministic math execution, ensuring 100% accurate calculations while the AI handles reasoning and synthesis.
 
-## Project Track: Concierge Agents
-FinPath India acts as an intelligent financial concierge. It ingests user financial profiles (in plain English or Hindi), interfaces with an MCP server to fetch real-time market data (Nifty 50, PPF, FD rates), runs financial projections (SIP, compound interest, debt payoff), and synthesizes a final recommendation.
+## 🌟 Key Enterprise Features
 
-## Architecture
+* **Context Engineering (Rolling Summary Memory):** Uses a background `IndianArchivist` agent to distill chat history into a structured user profile, enabling fast, token-efficient follow-up questions without "context rot."
+* **Zero Ambient Authority (Vibe Diff):** Surfaces an internal Execution Plan to the user *before* rendering advice, ensuring transparency in what data was extracted and which tools were called.
+* **Observability (Logs & Traces):** Implements a `ProductionLogger` emitting structured JSON logs for every agent thought, tool call, and latency metric.
+* **Agent Quality Flywheel:** Captures real-world user feedback (👍/👎) directly tied to specific Observability Trace IDs for continuous improvement.
+* **Agent-as-a-Judge Evaluation:** Uses a secondary LLM to evaluate the internal *process trace* (Process Evaluation) rather than just the final text output.
+
+---
+
+## 🏗️ Architecture Flow
 
 ```mermaid
 graph TD
-    User([User Query]) --> API[FastAPI Backend]
-    API --> Orchestrator[Orchestrator]
-    
-    subgraph Google ADK
-        Orchestrator --> Profiler[IndianProfiler LlmAgent]
-        Orchestrator --> Advisor[IndianFinancialAdvisor LlmAgent]
-    end
-    
-    subgraph FastMCP Server
-        Orchestrator --> MarketMCP[Market MCP Tool]
-        MarketMCP --> Yahoo[Yahoo Finance API]
-        MarketMCP --> RBI[Hardcoded Rates]
-    end
-    
-    Profiler --> |Extracts Profile| Orchestrator
-    MarketMCP --> |Market Rates| Orchestrator
-    Orchestrator --> |Runs Calculators| Advisor
-    Advisor --> |Final Advice| API
-    API --> UI[React Frontend]
+    A[User Query] --> B(IndianArchivist)
+    B -->|Generates Rolling Summary| C(IndianProfiler)
+    C -->|Extracts Strict JSON| D{Orchestrator}
+    D -->|Fetches Live Data| E[Market MCP]
+    D -->|Executes Deterministic Math| F[Python Calculators]
+    E --> D
+    F --> D
+    D -->|Outputs Vibe Diff| UI[User UI]
+    D -->|Passes Math + Context| G(IndianFinancialAdvisor)
+    G -->|Synthesizes Counterfactuals| UI
 ```
 
-## Kaggle Course Concepts Demonstrated
+---
 
-1. **Google ADK Integration**: Agents are defined using the official `LlmAgent` from `google-adk`.
-2. **Model Context Protocol (MCP)**: Financial data retrieval is wrapped into a standardized MCP server using `FastMCP`.
-3. **Security & Governance (The "Vibe Diff")**: The orchestrator pauses to generate a plain-English "Vibe Diff" (Execution Plan) before making its final recommendation, protecting against blind agent execution ("It works, ship it" fallacy).
-4. **Zero Ambient Authority**: API routes are rate-limited via `SlowAPI` and schema payloads enforce strict string boundaries to combat prompt injections.
-5. **Evaluation Harness**: Automated tests use the LLM-as-judge pattern to benchmark agent intent satisfaction.
-
-## How to Run Locally
+## 💻 Local Setup & Installation
 
 ### Prerequisites
 - Python 3.10+
-- Node.js 18+
-- Google Gemini API Key
+- Node.js & npm
+- A Google Gemini API Key
 
-### Backend Setup
-1. Create a `.env` file in the root directory:
-   ```
-   GOOGLE_API_KEY=your_key_here
-   ```
-2. Install Python dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Start the FastAPI server:
-   ```bash
-   uvicorn app.main:app --reload
-   ```
-
-### Frontend Setup
-1. Navigate to the UI folder:
-   ```bash
-   cd finpath-ui
-   ```
-2. Install dependencies and run:
-   ```bash
-   npm install
-   npm run dev
-   ```
-
-## Docker / Hugging Face Deployment
-The app includes a multi-stage `Dockerfile` and `docker-compose.yml`.
-To run the entire stack locally in a single container:
+### 1. Clone and Setup Backend
 ```bash
-docker compose up --build
+git clone https://github.com/YOUR_USERNAME/finpath-india.git
+cd finpath-india
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Set your API Key
+export GOOGLE_API_KEY="your_api_key_here"  # On Windows: set GOOGLE_API_KEY="your_api_key_here"
 ```
-This configuration is specifically optimized for free 1-click deployment to **Hugging Face Spaces** (Docker environment).
+
+### 2. Setup Frontend
+```bash
+cd finpath-ui
+npm install
+npm run build
+cd ..
+```
+
+### 3. Run the Server
+```bash
+uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+Open `http://127.0.0.1:8000` in your browser. Note: Structured Observability logs will stream directly to this terminal.
+
+---
+
+## 🚀 Deployment (Hugging Face Spaces / Docker)
+
+This application is fully containerized and designed for zero-config deployment on Hugging Face Spaces (Docker).
+
+1. Create a new **Docker** Space on Hugging Face.
+2. In the Space Settings, add your `GOOGLE_API_KEY` as a Secret.
+3. Push this repository directly to the Hugging Face Space using Git, or upload the files via the UI.
+4. The included `Dockerfile` will automatically build the React frontend, install Python dependencies, and expose the FastAPI server on port `7860`.
+
+```dockerfile
+# The Dockerfile automatically handles:
+# 1. Building the Vite React App
+# 2. Installing Python requirements
+# 3. Running Uvicorn on port 7860
+```
+
+---
+*Disclaimer: This project was built for educational purposes to demonstrate agentic architectures. AI-generated financial scenarios are for demonstration only and should not be considered professional financial advice.*
