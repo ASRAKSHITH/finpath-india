@@ -1,7 +1,7 @@
 # FinPath India
 
 An AI-driven financial advisory concierge agent tailored for the Indian market. Built using the Google Agent Development Kit (ADK), FastAPI, and React. 
-Submitted for the Kaggle AI Agents: Intensive Vibe Coding Capstone Project.
+
 
 ## Project Track: Concierge Agents
 FinPath India acts as an intelligent financial concierge. It ingests user financial profiles (in plain English or Hindi), interfaces with an MCP server to fetch real-time market data (Nifty 50, PPF, FD rates), runs financial projections (SIP, compound interest, debt payoff), and synthesizes a final recommendation.
